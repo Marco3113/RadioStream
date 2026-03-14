@@ -11,7 +11,6 @@ import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.os.Binder;
-import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -27,13 +26,13 @@ public class RadioService extends Service {
     private static final String ACTION_PAUSE = "com.radiostream.ACTION_PAUSE";
     private static final String ACTION_STOP  = "com.radiostream.ACTION_STOP";
 
-    private final IBinder binder = new LocalBinder();
+    private final IBinder binder = new RadioBinder();
     private MediaSessionCompat mediaSession;
     private AudioManager audioManager;
     private AudioFocusRequest audioFocusRequest;
     private boolean isPlaying = true;
 
-    public class LocalBinder extends Binder {
+    public class RadioBinder extends Binder {
         RadioService getService() { return RadioService.this; }
     }
 
@@ -60,8 +59,6 @@ public class RadioService extends Service {
         mediaSession.setMetadata(new MediaMetadataCompat.Builder()
             .putString(MediaMetadataCompat.METADATA_KEY_TITLE,  "RadioStream")
             .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, "Live Radio")
-            .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART,
-                BitmapFactory.decodeResource(getResources(), R.drawable.ic_logo))
             .build());
         mediaSession.setActive(true);
         updatePlaybackState();
@@ -97,8 +94,6 @@ public class RadioService extends Service {
         Intent openApp = new Intent(this, MainActivity.class);
         PendingIntent pendingOpen = PendingIntent.getActivity(this, 0, openApp,
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        String actionLabel = isPlaying ? "Pausa" : "Riproduci";
-        int actionIcon = isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play;
         Intent actionIntent = new Intent(this, RadioService.class)
             .setAction(isPlaying ? ACTION_PAUSE : ACTION_PLAY);
         PendingIntent actionPending = PendingIntent.getService(this, 0, actionIntent,
@@ -109,10 +104,10 @@ public class RadioService extends Service {
         return new NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("RadioStream")
             .setContentText(isPlaying ? "In riproduzione..." : "In pausa")
-            .setSmallIcon(R.drawable.ic_logo)
-            .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_logo))
+            .setSmallIcon(android.R.drawable.ic_media_play)
             .setContentIntent(pendingOpen)
-            .addAction(actionIcon, actionLabel, actionPending)
+            .addAction(isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play,
+                isPlaying ? "Pausa" : "Play", actionPending)
             .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Stop", stopPending)
             .setStyle(new MediaStyle()
                 .setMediaSession(mediaSession.getSessionToken())
@@ -157,4 +152,4 @@ public class RadioService extends Service {
         if (mediaSession != null) { mediaSession.setActive(false); mediaSession.release(); }
         if (audioFocusRequest != null) audioManager.abandonAudioFocusRequest(audioFocusRequest);
     }
-}
+    }
