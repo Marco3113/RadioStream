@@ -61,14 +61,15 @@ public class MainActivity extends AppCompatActivity {
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         getWindow().setStatusBarColor(Color.parseColor("#00000F"));
         setContentView(R.layout.activity_main);
-        webView     = findViewById(R.id.webView);
-        progressBar = findViewById(R.id.progressBar);
-        errorView   = findViewById(R.id.errorView);
+        webView        = findViewById(R.id.webView);
+        progressBar    = findViewById(R.id.progressBar);
+        errorView      = findViewById(R.id.errorView);
         requestMicPermission();
         setupCookies();
         setupWebView();
         startRadioService();
         webView.loadUrl(STREAM_URL);
+        findViewById(R.id.refreshButton).setOnClickListener(v -> webView.reload());
     }
 
     private void setupCookies() {
@@ -188,4 +189,4 @@ public class MainActivity extends AppCompatActivity {
         webView.destroy();
         super.onDestroy();
     }
-            }
+    }
